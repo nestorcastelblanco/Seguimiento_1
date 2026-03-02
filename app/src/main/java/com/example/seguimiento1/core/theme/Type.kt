@@ -1,4 +1,4 @@
-package com.example.seguimiento1.core.component.navigation.theme
+package com.example.seguimiento1.core.component.navigation.theme.utils
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

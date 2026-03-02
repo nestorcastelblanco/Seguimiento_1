@@ -1,4 +1,4 @@
-package com.example.seguimiento1.core.component.navigation.theme
+package com.example.seguimiento1.core.component.navigation.theme.utils
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
