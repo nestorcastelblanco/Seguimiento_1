@@ -10,10 +10,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.seguimiento1.R
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -23,9 +24,9 @@ fun HomeScreen() {
     ) {
 
         Image(
-            painter = painterResource(id = R.drawable.ic_reportes_ciudadanos),
+            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
             contentDescription = "Logo Reportes Ciudadanos",
-            modifier = Modifier.size(150.dp)
+            modifier = Modifier.size(300.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))

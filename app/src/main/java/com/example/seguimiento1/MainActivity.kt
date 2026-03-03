@@ -23,7 +23,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.seguimiento1.core.component.navigation.theme.utils.Seguimiento1Theme
+import com.example.seguimiento1.features.home.HomeScreen
+import com.example.seguimiento1.features.login.LoginScreen
+import com.example.seguimiento1.features.recover_password.RecoverPasswordScreen
+import com.example.seguimiento1.features.register.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +38,30 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Seguimiento1Theme {
-                Seguimiento1App()
+
+                val navController = rememberNavController()
+
+                NavHost(
+                    navController = navController,
+                    startDestination = "login"
+                ) {
+
+                    composable("login") {
+                        LoginScreen(navController)
+                    }
+
+                    composable("register") {
+                        RegisterScreen(navController)
+                    }
+
+                    composable("recover") {
+                        RecoverPasswordScreen(navController)
+                    }
+
+                    composable("home") {
+                        HomeScreen(navController)
+                    }
+                }
             }
         }
     }
