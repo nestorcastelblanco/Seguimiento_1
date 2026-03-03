@@ -12,12 +12,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import com.example.seguimiento1.R
+import android.util.Patterns
+import androidx.compose.foundation.text.KeyboardOptions
 
 @Composable
 fun RecoverPasswordScreen(
@@ -28,12 +31,23 @@ fun RecoverPasswordScreen(
     val scope = rememberCoroutineScope()
     val email by viewModel.email.collectAsState()
 
+    // CONTROL DE CAMPO TOCADO
+    var emailTouched by remember { mutableStateOf(false) }
+
+    // VALIDACIÓN
+    val emailError = when {
+        email.isEmpty() -> "El correo es obligatorio"
+        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Correo inválido"
+        else -> null
+    }
+
     Scaffold(
         topBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(top = 30.dp)
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { navController.popBackStack() }) {
@@ -62,7 +76,6 @@ fun RecoverPasswordScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Icono dentro de círculo
             Surface(
                 modifier = Modifier.size(120.dp),
                 shape = CircleShape,
@@ -97,10 +110,22 @@ fun RecoverPasswordScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { viewModel.onEmailChange(it) },
+                onValueChange = {
+                    if (!emailTouched) emailTouched = true
+                    viewModel.onEmailChange(it)
+                },
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = emailTouched && emailError != null,
+                supportingText = {
+                    if (emailTouched) {
+                        emailError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -112,11 +137,11 @@ fun RecoverPasswordScreen(
                 shape = RoundedCornerShape(30.dp),
                 onClick = {
                     scope.launch {
-                        if (email.isEmpty()) {
-                            snackbarHostState.showSnackbar("Ingrese su correo")
+                        if (emailError != null) {
+                            snackbarHostState.showSnackbar("Ingrese un correo válido")
                         } else {
                             snackbarHostState.showSnackbar("Enlace enviado")
-                            navController.popBackStack()
+                            navController.navigate("new_password")
                         }
                     }
                 }

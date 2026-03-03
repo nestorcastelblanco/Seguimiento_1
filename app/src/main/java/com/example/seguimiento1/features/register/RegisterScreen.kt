@@ -1,6 +1,5 @@
 package com.example.seguimiento1.features.register
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,15 +11,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.seguimiento1.R
 import kotlinx.coroutines.launch
+import android.util.Patterns
+import androidx.compose.foundation.text.KeyboardOptions
 
 @Composable
 fun RegisterScreen(
@@ -40,12 +40,61 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmVisible by remember { mutableStateOf(false) }
 
+    // CONTROL DE CAMPOS TOCADOS
+    var nombreTouched by remember { mutableStateOf(false) }
+    var emailTouched by remember { mutableStateOf(false) }
+    var telefonoTouched by remember { mutableStateOf(false) }
+    var ciudadTouched by remember { mutableStateOf(false) }
+    var passwordTouched by remember { mutableStateOf(false) }
+    var confirmTouched by remember { mutableStateOf(false) }
+
+    // VALIDACIONES
+
+    val nombreError = when {
+        nombre.isEmpty() -> "El nombre es obligatorio"
+        nombre.length < 3 -> "Debe tener mínimo 3 caracteres"
+        else -> null
+    }
+
+    val emailError = when {
+        email.isEmpty() -> "El correo es obligatorio"
+        !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Correo inválido"
+        else -> null
+    }
+
+    val telefonoError = when {
+        telefono.isEmpty() -> "El teléfono es obligatorio"
+        telefono.length < 10 -> "Debe tener al menos 10 dígitos"
+        !telefono.all { it.isDigit() } -> "Solo debe contener números"
+        else -> null
+    }
+
+    val ciudadError = when {
+        ciudad.isEmpty() -> "La ciudad es obligatoria"
+        ciudad.length < 3 -> "Nombre de ciudad inválido"
+        else -> null
+    }
+
+    val passwordError = when {
+        password.isEmpty() -> "La contraseña es obligatoria"
+        password.length < 8 -> "Mínimo 8 caracteres"
+        !password.any { it.isDigit() } -> "Debe contener al menos un número"
+        else -> null
+    }
+
+    val confirmError = when {
+        confirmPassword.isEmpty() -> "Confirma tu contraseña"
+        confirmPassword != password -> "Las contraseñas no coinciden"
+        else -> null
+    }
+
     Scaffold(
         topBar = {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(top = 30.dp)
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { navController.popBackStack() }) {
@@ -82,49 +131,103 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // NOMBRE
             OutlinedTextField(
                 value = nombre,
-                onValueChange = { viewModel.nombre(it) },
+                onValueChange = {
+                    if (!nombreTouched) nombreTouched = true
+                    viewModel.nombre(it)
+                },
                 label = { Text("Nombre Completo") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = nombreTouched && nombreError != null,
+                supportingText = {
+                    if (nombreTouched) {
+                        nombreError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // EMAIL
             OutlinedTextField(
                 value = email,
-                onValueChange = { viewModel.onEmailChange(it) },
+                onValueChange = {
+                    if (!emailTouched) emailTouched = true
+                    viewModel.onEmailChange(it)
+                },
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = emailTouched && emailError != null,
+                supportingText = {
+                    if (emailTouched) {
+                        emailError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // TELEFONO (NUMÉRICO)
             OutlinedTextField(
                 value = telefono,
-                onValueChange = { viewModel.telefono(it) },
+                onValueChange = {
+                    if (!telefonoTouched) telefonoTouched = true
+                    viewModel.telefono(it)
+                },
                 label = { Text("Teléfono") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = telefonoTouched && telefonoError != null,
+                supportingText = {
+                    if (telefonoTouched) {
+                        telefonoError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // CIUDAD
             OutlinedTextField(
                 value = ciudad,
-                onValueChange = { viewModel.ciudad(it) },
+                onValueChange = {
+                    if (!ciudadTouched) ciudadTouched = true
+                    viewModel.ciudad(it)
+                },
                 label = { Text("Ciudad") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = ciudadTouched && ciudadError != null,
+                supportingText = {
+                    if (ciudadTouched) {
+                        ciudadError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // PASSWORD
             OutlinedTextField(
                 value = password,
-                onValueChange = { viewModel.onPasswordChange(it) },
+                onValueChange = {
+                    if (!passwordTouched) passwordTouched = true
+                    viewModel.onPasswordChange(it)
+                },
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -132,13 +235,25 @@ fun RegisterScreen(
                     VisualTransformation.None
                 else
                     PasswordVisualTransformation(),
+                isError = passwordTouched && passwordError != null,
+                supportingText = {
+                    if (passwordTouched) {
+                        passwordError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // CONFIRM PASSWORD
             OutlinedTextField(
                 value = confirmPassword,
-                onValueChange = { viewModel.onConfirmPasswordChange(it) },
+                onValueChange = {
+                    if (!confirmTouched) confirmTouched = true
+                    viewModel.onConfirmPasswordChange(it)
+                },
                 label = { Text("Confirmar Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -146,6 +261,14 @@ fun RegisterScreen(
                     VisualTransformation.None
                 else
                     PasswordVisualTransformation(),
+                isError = confirmTouched && confirmError != null,
+                supportingText = {
+                    if (confirmTouched) {
+                        confirmError?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -157,29 +280,23 @@ fun RegisterScreen(
                 shape = RoundedCornerShape(30.dp),
                 onClick = {
                     scope.launch {
-                        when {
-                            nombre.isEmpty() ||
-                                    email.isEmpty() ||
-                                    telefono.isEmpty() ||
-                                    ciudad.isEmpty() ||
-                                    password.isEmpty() ||
-                                    confirmPassword.isEmpty() -> {
+                        if (
+                            nombreError != null ||
+                            emailError != null ||
+                            telefonoError != null ||
+                            ciudadError != null ||
+                            passwordError != null ||
+                            confirmError != null
+                        ) {
+                            snackbarHostState.showSnackbar("Corrige los campos marcados")
+                            return@launch
+                        }
 
-                                snackbarHostState.showSnackbar("Todos los campos son obligatorios")
-                            }
-
-                            password != confirmPassword -> {
-                                snackbarHostState.showSnackbar("Las contraseñas no coinciden")
-                            }
-
-                            viewModel.register() -> {
-                                snackbarHostState.showSnackbar("Registro exitoso")
-                                navController.popBackStack()
-                            }
-
-                            else -> {
-                                snackbarHostState.showSnackbar("Error en registro")
-                            }
+                        if (viewModel.register()) {
+                            snackbarHostState.showSnackbar("Registro exitoso")
+                            navController.popBackStack()
+                        } else {
+                            snackbarHostState.showSnackbar("Error en registro")
                         }
                     }
                 }
@@ -197,15 +314,13 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("¿Ya tienes cuenta? ")
 
                 Text(
                     text = "Inicia Sesión",
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable{
+                    modifier = Modifier.clickable {
                         navController.popBackStack()
                     }
                 )

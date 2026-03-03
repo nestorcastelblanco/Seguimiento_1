@@ -27,6 +27,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.seguimiento1.core.component.navigation.theme.utils.Seguimiento1Theme
+import com.example.seguimiento1.features.change_password.NewPasswordScreen
 import com.example.seguimiento1.features.home.HomeScreen
 import com.example.seguimiento1.features.login.LoginScreen
 import com.example.seguimiento1.features.recover_password.RecoverPasswordScreen
@@ -60,6 +61,10 @@ class MainActivity : ComponentActivity() {
 
                     composable("home") {
                         HomeScreen(navController)
+                    }
+
+                    composable("new_password") {
+                        NewPasswordScreen(navController)
                     }
                 }
             }

@@ -3,7 +3,6 @@ package com.example.seguimiento1.features.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import com.example.seguimiento1.R
+import android.util.Patterns
 
 @Composable
 fun LoginScreen(
@@ -28,6 +28,29 @@ fun LoginScreen(
     val password by viewModel.password.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // NUEVO: Detectar si el usuario tocó el campo
+    var emailTouched by remember { mutableStateOf(false) }
+    var passwordTouched by remember { mutableStateOf(false) }
+
+    // =========================
+    // VALIDACIONES
+    // =========================
+
+    val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    val emailError = when {
+        email.isEmpty() -> "El correo no puede estar vacío"
+        email.length < 6 -> "Debe tener al menos 6 caracteres"
+        !isEmailValid -> "Formato de correo inválido"
+        else -> null
+    }
+
+    val passwordError = when {
+        password.isEmpty() -> "La contraseña no puede estar vacía"
+        password.length < 8 -> "Debe tener mínimo 8 caracteres"
+        !password.any { it.isDigit() } -> "Debe contener al menos un número"
+        else -> null
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
@@ -39,14 +62,13 @@ fun LoginScreen(
                 .padding(horizontal = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // LOGO
+
             Image(
                 painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                 contentDescription = "Logo",
                 modifier = Modifier.size(200.dp),
             )
 
-            // TITULO
             Text(
                 text = "CIUDAD ALERTA",
                 style = MaterialTheme.typography.headlineMedium,
@@ -68,33 +90,64 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // =========================
             // EMAIL
+            // =========================
             OutlinedTextField(
                 value = email,
-                onValueChange = { viewModel.onEmailChange(it) },
+                onValueChange = {
+                    if (!emailTouched) emailTouched = true
+                    viewModel.onEmailChange(it)
+                },
                 label = { Text("Correo Electrónico") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = emailTouched && emailError != null,
+                supportingText = {
+                    if (emailTouched) {
+                        emailError?.let {
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // =========================
             // PASSWORD
+            // =========================
             OutlinedTextField(
                 value = password,
-                onValueChange = { viewModel.onPasswordChange(it) },
+                onValueChange = {
+                    if (!passwordTouched) passwordTouched = true
+                    viewModel.onPasswordChange(it)
+                },
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 visualTransformation = if (passwordVisible)
                     VisualTransformation.None
                 else
-                    PasswordVisualTransformation()
+                    PasswordVisualTransformation(),
+                isError = passwordTouched && passwordError != null,
+                supportingText = {
+                    if (passwordTouched) {
+                        passwordError?.let {
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // OLVIDASTE CONTRASEÑA
             TextButton(
                 onClick = { navController.navigate("recover") },
                 modifier = Modifier.align(Alignment.End)
@@ -104,7 +157,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // BOTON INICIAR SESION (AZUL)
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,11 +164,11 @@ fun LoginScreen(
                 onClick = {
                     scope.launch {
                         when {
-                            email.isEmpty() ->
-                                snackbarHostState.showSnackbar("El correo está vacío")
+                            emailError != null ->
+                                snackbarHostState.showSnackbar("Corrige el correo")
 
-                            password.isEmpty() ->
-                                snackbarHostState.showSnackbar("La contraseña está vacía")
+                            passwordError != null ->
+                                snackbarHostState.showSnackbar("Corrige la contraseña")
 
                             viewModel.login() -> {
                                 navController.navigate("home") {
@@ -139,7 +191,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // BOTON MODERADOR (NARANJA)
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
